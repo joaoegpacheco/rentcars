@@ -190,16 +190,75 @@ app.get('/pesquisa', async (req, res) => {
 
 // Funções auxiliares
 async function buscarLocadorasAtivas() {
-    // lógica de busca de locadoras ativas
-    return [{ id: 1, nome: 'Locadora Exemplo', ativa: true }];
+    try {
+        // Ler o arquivo de locadoras
+        const dados = await db.lerArquivo();
+        
+        // Filtrar apenas as locadoras ativas
+        const locadorasAtivas = dados.locadoras.filter(locadora => 
+            locadora.ativa === true
+        );
+        
+        // Retornar apenas os campos necessários
+        return locadorasAtivas.map(locadora => ({
+            id: locadora.id,
+            nome: locadora.nome,
+            endereco: locadora.endereco,
+            ativa: locadora.ativa
+        }));
+    } catch (erro) {
+        console.error('Erro ao buscar locadoras ativas:', erro);
+        throw new Error('Erro ao buscar locadoras ativas');
+    }
 }
 
 async function consultarApiMock(locadora) {
-    // Simular consulta à API mockada da locadora
-    return [
-        { nome: "Chevrolet Onix", categoria: "Econômico", preco: 120 },
-        { nome: "Toyota Corolla", categoria: "Sedan", preco: 200 }
-    ];
+    try {
+        // Simular latência de rede
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        // Validar se a locadora existe
+        const dados = await db.lerArquivo();
+        const locadoraExiste = dados.locadoras.some(l => l.id === locadora.id);
+        
+        if (!locadoraExiste) {
+            throw new Error('Locadora não encontrada');
+        }
+        
+        // Simular diferentes conjuntos de veículos baseados na locadora
+        const veiculosDisponiveis = {
+            'econômico': [
+                { nome: "Chevrolet Onix", categoria: "Econômico", preco: 120 },
+                { nome: "Fiat Uno", categoria: "Econômico", preco: 110 },
+                { nome: "Volkswagen Gol", categoria: "Econômico", preco: 125 }
+            ],
+            'intermediário': [
+                { nome: "Toyota Corolla", categoria: "Intermediário", preco: 200 },
+                { nome: "Honda Civic", categoria: "Intermediário", preco: 210 },
+                { nome: "Volkswagen Jetta", categoria: "Intermediário", preco: 205 }
+            ],
+            'luxo': [
+                { nome: "Mercedes-Benz C-Class", categoria: "Luxo", preco: 450 },
+                { nome: "BMW Série 3", categoria: "Luxo", preco: 460 },
+                { nome: "Audi A4", categoria: "Luxo", preco: 455 }
+            ]
+        };
+        
+        // Selecionar veículos baseados na categoria da locadora
+        const categoria = locadora.nome.toLowerCase().includes('econômico') ? 'econômico' :
+                         locadora.nome.toLowerCase().includes('luxo') ? 'luxo' :
+                         'intermediário';
+        
+        // Simular possibilidade de indisponibilidade
+        if (Math.random() < 0.1) { // 10% de chance de erro
+            throw new Error('Serviço indisponível no momento');
+        }
+        
+        return veiculosDisponiveis[categoria];
+    } catch (erro) {
+        console.error(`Erro ao consultar API mock da locadora ${locadora.id}:`, erro);
+        throw erro;
+    }
 }
 
 const PORT = process.env.PORT || 3000;
