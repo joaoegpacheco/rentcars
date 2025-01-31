@@ -1,0 +1,16 @@
+{
+    "veiculos": [
+        {
+            "nome": "Chevrolet Onix",
+            "categoria": "Econômico",
+            "preco": 120,
+            "disponivel": true
+        },
+        {
+            "nome": "Toyota Corolla",
+            "categoria": "Sedan",
+            "preco": 200,
+            "disponivel": true
+        }
+    ]
+}

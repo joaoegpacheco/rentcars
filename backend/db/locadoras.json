@@ -1,0 +1,16 @@
+{
+    "locadoras": [
+        {
+            "id": "12345",
+            "nome": "Locadora A",
+            "ativa": true,
+            "endereco": "Rua A"
+        },
+        {
+            "id": "67890",
+            "nome": "Locadora B",
+            "ativa": false,
+            "endereco": "Rua B"
+        }
+    ]
+}
