@@ -1,5 +1,6 @@
 const express = require('express');
 const bodyParser = require('body-parser');
+const db = require('./utils/db');
 
 const app = express();
 app.use(bodyParser.json());
@@ -11,33 +12,160 @@ app.use((req, res, next) => {
 });
 
 // CRUD Endpoints para Locadoras
-app.post('/locadoras', (req, res) => {
-    const locadora = req.body;
-    // lógica de criação
-    res.status(201).json({ mensagem: 'Locadora criada com sucesso' });
+// POST /locadoras
+app.post('/locadoras', async (req, res) => {
+    try {
+        // Validar dados recebidos
+        const { nome, endereco, ativa = true } = req.body;
+        
+        if (!nome || !endereco) {
+            return res.status(400).json({
+                mensagem: 'Nome e endereço são obrigatórios'
+            });
+        }
+
+        // Ler banco de dados
+        const dados = await db.lerArquivo();
+
+        // Criar nova locadora
+        const novaLocadora = {
+            id: db.gerarId(),
+            nome,
+            endereco,
+            ativa,
+            criadoEm: new Date().toISOString()
+        };
+
+        // Adicionar à lista
+        dados.locadoras.push(novaLocadora);
+
+        // Salvar alterações
+        await db.salvarArquivo(dados);
+
+        res.status(201).json({
+            mensagem: 'Locadora criada com sucesso',
+            locadora: novaLocadora
+        });
+    } catch (erro) {
+        console.error('Erro ao criar locadora:', erro);
+        res.status(500).json({
+            mensagem: 'Erro interno do servidor',
+            erro: erro.message
+        });
+    }
 });
 
-app.get('/locadoras', (req, res) => {
-    // lógica de listagem
-    res.json([{ id: 1, nome: 'Exemplo' }]);
+// GET /locadoras
+app.get('/locadoras', async (req, res) => {
+    try {
+        const dados = await db.lerArquivo();
+        res.json(dados.locadoras);
+    } catch (erro) {
+        console.error('Erro ao listar locadoras:', erro);
+        res.status(500).json({
+            mensagem: 'Erro ao buscar locadoras'
+        });
+    }
 });
 
-app.get('/locadoras/:id', (req, res) => {
-    const id = req.params.id;
-    // lógica de busca por ID
-    res.json({ id: 1, nome: 'Exemplo' });
+// GET /locadoras/:id
+app.get('/locadoras/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const dados = await db.lerArquivo();
+        
+        const locadora = dados.locadoras.find(l => l.id === id);
+        
+        if (!locadora) {
+            return res.status(404).json({
+                mensagem: 'Locadora não encontrada'
+            });
+        }
+
+        res.json(locadora);
+    } catch (erro) {
+        console.error('Erro ao buscar locadora:', erro);
+        res.status(500).json({
+            mensagem: 'Erro ao buscar locadora'
+        });
+    }
 });
 
-app.put('/locadoras/:id', (req, res) => {
-    const id = req.params.id;
-    // lógica de atualização
-    res.json({ mensagem: 'Locadora atualizada com sucesso' });
+// PUT /locadoras/:id
+app.put('/locadoras/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        
+        // Validar dados recebidos
+        const { nome, endereco, ativa } = req.body;
+        
+        if (!nome || !endereco) {
+            return res.status(400).json({
+                mensagem: 'Nome e endereço são obrigatórios'
+            });
+        }
+
+        const dados = await db.lerArquivo();
+        
+        const index = dados.locadoras.findIndex(l => l.id === id);
+        
+        if (index === -1) {
+            return res.status(404).json({
+                mensagem: 'Locadora não encontrada'
+            });
+        }
+
+        // Atualizar locadora
+        dados.locadoras[index] = {
+            ...dados.locadoras[index],
+            nome,
+            endereco,
+            ativa,
+            atualizadoEm: new Date().toISOString()
+        };
+
+        await db.salvarArquivo(dados);
+
+        res.json({
+            mensagem: 'Locadora atualizada com sucesso',
+            locadora: dados.locadoras[index]
+        });
+    } catch (erro) {
+        console.error('Erro ao atualizar locadora:', erro);
+        res.status(500).json({
+            mensagem: 'Erro interno do servidor',
+            erro: erro.message
+        });
+    }
 });
 
-app.delete('/locadoras/:id', (req, res) => {
-    const id = req.params.id;
-    // lógica de exclusão
-    res.status(204).send();
+// DELETE /locadoras/:id
+app.delete('/locadoras/:id', async (req, res) => {
+    try {
+        const id = req.params.id;
+        const dados = await db.lerArquivo();
+        
+        const index = dados.locadoras.findIndex(l => l.id === id);
+        
+        if (index === -1) {
+            return res.status(404).json({
+                mensagem: 'Locadora não encontrada'
+            });
+        }
+
+        // Remover locadora
+        dados.locadoras.splice(index, 1);
+        
+        await db.salvarArquivo(dados);
+
+        res.status(204).send();
+    } catch (erro) {
+        console.error('Erro ao excluir locadora:', erro);
+        res.status(500).json({
+            mensagem: 'Erro interno do servidor',
+            erro: erro.message
+        });
+    }
 });
 
 // Endpoint de Pesquisa de Veículos
