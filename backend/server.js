@@ -195,11 +195,23 @@ app.get('/pesquisa', async (req, res) => {
     try {
         const locadoras = await buscarLocadorasAtivas();
         const resultados = [];
+        
+        // Buscar todos os veículos para cada locadora
         for (const locadora of locadoras) {
             const veiculos = await consultarApiMock(locadora);
             resultados.push(...veiculos);
         }
-        res.json(resultados);
+        
+        // Agrupar por categoria para melhor exibição
+        const porCategoria = resultados.reduce((acc, veiculo) => {
+            if (!acc[veiculo.categoria]) {
+                acc[veiculo.categoria] = [];
+            }
+            acc[veiculo.categoria].push(veiculo);
+            return acc;
+        }, {});
+
+        res.json(porCategoria);
     } catch (erro) {
         console.error('Erro na pesquisa:', erro);
         res.status(500).json({ mensagem: 'Erro ao buscar veículos disponíveis' });
@@ -238,11 +250,10 @@ async function consultarApiMock(locadora) {
         // Validar se a locadora existe
         const dados = await db.lerArquivo();
         const locadoraExiste = dados.locadoras.some(l => l.id === locadora.id);
-        
         if (!locadoraExiste) {
             throw new Error('Locadora não encontrada');
         }
-        
+
         // Simular diferentes conjuntos de veículos baseados na locadora
         const veiculosDisponiveis = {
             'econômico': [
@@ -261,18 +272,19 @@ async function consultarApiMock(locadora) {
                 { nome: "Audi A4", categoria: "Luxo", preco: 455 }
             ]
         };
-        
+
         // Selecionar veículos baseados na categoria da locadora
         const categoria = locadora.nome.toLowerCase().includes('econômico') ? 'econômico' :
                          locadora.nome.toLowerCase().includes('luxo') ? 'luxo' :
                          'intermediário';
-        
+
         // Simular possibilidade de indisponibilidade
         if (Math.random() < 0.1) { // 10% de chance de erro
             throw new Error('Serviço indisponível no momento');
         }
-        
-        return veiculosDisponiveis[categoria];
+
+        // Retornar todos os veículos disponíveis
+        return [...veiculosDisponiveis];
     } catch (erro) {
         console.error(`Erro ao consultar API mock da locadora ${locadora.id}:`, erro);
         throw erro;
