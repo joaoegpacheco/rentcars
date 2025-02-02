@@ -1,0 +1,44 @@
+{
+    "locadoras": [
+      {
+        "id": 1,
+        "nome": "Locadora A",
+        "endereco": "Av. Principal, 123",
+        "telefone": "1234-5678",
+        "ativo": true
+      },
+      {
+        "id": 2,
+        "nome": "Locadora B",
+        "endereco": "Rua Secundária, 456",
+        "telefone": "9012-3456",
+        "ativo": true
+      }
+    ],
+    "veiculos": [
+      {
+        "id": 1,
+        "locadoraId": 1,
+        "nome": "Chevrolet Onix",
+        "categoria": "Econômico",
+        "preco": 120,
+        "disponivel": true
+      },
+      {
+        "id": 2,
+        "locadoraId": 1,
+        "nome": "Toyota Corolla",
+        "categoria": "Sedan",
+        "preco": 200,
+        "disponivel": true
+      },
+      {
+        "id": 3,
+        "locadoraId": 2,
+        "nome": "Honda Civic",
+        "categoria": "Sedan",
+        "preco": 180,
+        "disponivel": true
+      }
+    ]
+  }

@@ -1,12 +1,12 @@
 const jsonServer = require('json-server');
 const server = jsonServer.create();
-const router = jsonServer.router('./db/veiculos-disponiveis.json');
+const router = jsonServer.router('mocks/db.json'); 
 const middlewares = jsonServer.defaults();
 
 server.use(middlewares);
 server.use(router);
 
-const MOCK_PORT = process.env.MOCK_PORT || 3001;
-server.listen(MOCK_PORT, () => {
-    console.log(`Mock API rodando na porta ${MOCK_PORT}`);
+const PORT = 3002; // Change port if needed
+server.listen(PORT, () => {
+  console.log(`JSON Server is running on http://localhost:${PORT}`);
 });

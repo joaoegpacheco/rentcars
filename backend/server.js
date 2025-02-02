@@ -1,8 +1,30 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const db = require('./utils/db');
+const cors = require('cors');
 
+const allowedOrigins = [
+    'http://localhost:3000',
+    'http://localhost:3001',
+    'http://localhost:3002'
+];
+
+const corsOptions = {
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Não autorizado'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    credentials: true
+};
 const app = express();
+
+app.use(cors(corsOptions));
+
 app.use(bodyParser.json());
 
 // Middleware para logs de requisição
@@ -171,16 +193,12 @@ app.delete('/locadoras/:id', async (req, res) => {
 // Endpoint de Pesquisa de Veículos
 app.get('/pesquisa', async (req, res) => {
     try {
-        // Buscar locadoras ativas
         const locadoras = await buscarLocadorasAtivas();
-        
-        // Buscar veículos disponíveis em cada locadora
         const resultados = [];
         for (const locadora of locadoras) {
             const veiculos = await consultarApiMock(locadora);
             resultados.push(...veiculos);
         }
-        
         res.json(resultados);
     } catch (erro) {
         console.error('Erro na pesquisa:', erro);
@@ -261,7 +279,7 @@ async function consultarApiMock(locadora) {
     }
 }
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3001;
 app.listen(PORT, () => {
     console.log(`Servidor rodando na porta ${PORT}`);
 });
