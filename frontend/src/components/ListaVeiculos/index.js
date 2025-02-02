@@ -3,16 +3,19 @@ import CardVeiculo from '../CardVeiculo';
 import { FiltroContainer, SelectFiltro, ListaContainer } from './style';
 
 function ListaVeiculos({ veiculos }) {
+
   const [categoriaFiltrada, setCategoriaFiltrada] = useState('');
+  const categoriasUnicas = useMemo(() => {
+  return ['Todos os veículos', ...new Set(Object.keys(veiculos))];
+  }, [veiculos]);
+
 
   const veiculosFiltrados = useMemo(() => {
-    if (!categoriaFiltrada) return veiculos;
-    return veiculos.filter(v => v.categoria === categoriaFiltrada);
+      if (!categoriaFiltrada || categoriaFiltrada === 'Todos os veículos') {
+      return Object.values(veiculos).flat();
+      }
+      return veiculos[categoriaFiltrada] || [];
   }, [veiculos, categoriaFiltrada]);
-
-  const categoriasUnicas = useMemo(() => {
-    return [...new Set(veiculos.map(v => v.categoria))];
-  }, [veiculos]);
 
   return (
     <>
@@ -21,13 +24,11 @@ function ListaVeiculos({ veiculos }) {
           value={categoriaFiltrada}
           onChange={(e) => setCategoriaFiltrada(e.target.value)}
         >
-          <option value="">Todos os veículos</option>
           {categoriasUnicas.map(cat => (
             <option key={cat} value={cat}>{cat}</option>
           ))}
         </SelectFiltro>
       </FiltroContainer>
-
       <ListaContainer>
         {veiculosFiltrados.map(veiculo => (
           <CardVeiculo key={veiculo.id} veiculo={veiculo} />
