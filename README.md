@@ -17,3 +17,14 @@ npm run mock
 ```
 npm start
 ```
+
+# Front-End
+Como Executar o Projeto
+
+> Abra um terminal separado dos terminais do back-end:
+
+- No terminal, execute o seguinte comando para dar start na aplicação
+
+```
+npm start
+```
